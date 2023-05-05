@@ -1,0 +1,193 @@
+Yocto Project Quick Start
+=========================
+
+
+
+Setting up the build machine
+--------------------------
+
+Make sure your build host meets the following requirements:
+
+1. 50 Gbytes of free disk space
+
+2. Runs a supported Linux distribution (i.e. recent releases of Fedora, openSUSE, CentOS, Debian, or Ubuntu). 
+
+3. Meets the following version requirements :
+	- Git 1.8.3.1 or greater
+	- tar 1.28 or greater
+	- Python 3.6.0 or greater.
+	- gcc 7.5 or greater.
+	- GNU make 4.0 or greater
+	
+Packages and package installation vary depending on your development system.
+
+(*) Install the required packages for Yocto from https://www.yoctoproject.org/docs/latest/ref-manual/ref-manual.html#ubuntu-packages
+
+
+$ sudo apt install gawk wget git diffstat unzip texinfo gcc build-essential \ 
+    chrpath socat cpio python3 python3-pip python3-pexpect xz-utils debianutils \ 
+    iputils-ping python3-git python3-jinja2 libegl1-mesa libsdl1.2-dev pylint3 \ 
+    xterm python3-subunit mesa-common-dev zstd liblz4-tool
+
+
+
+Workflow of your first Yocto installation
+-----------------------------------------
+
+1. Download the Poky Source code
+
+$ git clone git://git.yoctoproject.org/poky
+
+Poky includes:
+
+	- Some OE components(oe-core)
+	- Bitbake
+	- Demo BSP
+	- Helper scripts to setup environment
+	- Emulator QEMU to test the image
+
+
+2. Checkout the latest LTS branch/release (kirkstone)
+
+$ git checkout kirkstone
+ 
+
+
+3. Prepare the build environment
+
+Poky provides you a script 'oe-init-build-env', which should be used to setup the build environment. The script will set up your environment to use the Yocto build system, including adding the BitBake utility to your path.
+
+$ source poky/oe-init-build-env [build_directory]
+
+Here "build_directory" is an optional argument for the name of the directory where the environment is set. If it is not given, it defaults to 'build'.
+
+The above script will move you in the build folder and create two files (local.conf, bblayers.conf) inside the 'conf' subfolder.
+
+
+
+4. Building 
+
+$ bitbake <image_name>
+
+
+core-image-minimal
+----------------------
+
+This is a small image allowing a device to boot, and it is very useful for kernel and boot loader tests and development.
+
+$ bitbake core-image-minimal
+
+
+
+5. Running
+
+
+You can check the version that you are currently using by running:
+
+$ bitbake -e | grep '^DISTRO_VERSION\|DISTRO_CODENAME='
+
+
+The Yocto Project uses an implementation of the Quick EMUlator (QEMU) Open Source project as part of the Yocto Project development tool set. This implementation is not the same as QEMU in general.
+
+To use QEMU, you need to have QEMU installed and initialised as well as have the proper artifacts (i.e. image files and root filesystems) available.
+
+Poky provides a script 'runqemu' which allows you to start the QEMU using the yocto generated images.
+
+The 'runqemu' script is run as:
+
+$ runqemu <machine> <zimage> <filesystem>
+
+where:
+
+   <machine> is the machine/architecture to use (qemuarm/qemumips/qemuppc/qemux86/qemux86-64)
+   <zimage> is the path to a kernel (e.g. zimage-qemuarm.bin)
+   <filesystem> is the path to an ext2 image (e.g. filesystem-qemuarm.ext2) or an nfs directory
+
+Full usage instructions can be seen by running the command with no options specified.
+
+When more than one image with the same name exists, QEMU finds and uses the most recently built image according to the timestamp.
+
+$ runqemu qemux86-64
+
+$ runqemu qemux86-64 core-image-minimal
+
+$ runqemu qemux86-64 core-image-minimal ext4
+
+
+
+Steps to generate an ARM image and run in QEMU
+-------------------------------------------
+
+When you set up the build environment, a local configuration file named 'local.conf' becomes available in the 'conf' subdirectory of the build directory.
+
+The defaults are set to build for a qemux86-64 target.
+
+Edit ./build/conf/local.conf
+
+Set MACHINE = "qemuarm"
+
+$ source poky/oe-init-build-env
+
+$ bitbake core-image-minimal
+
+$ runqemu core-image-minimal
+
+
+
+nographic
+---------
+
+You can launch QEMU without the graphic window by adding nographic to the command line
+
+$ runqemu qemuarm nographic
+
+
+
+Customising images
+------------------
+
+You can customise images to satisfy particular requirements. The easiest way to customise an image is to add packages by way of the 'local.conf' configuration file. 
+
+To add packages to your image using the local configuration file, use the IMAGE_INSTALL variable with the :append operator. Open your 'local.conf' file and add the recipe name below:
+
+IMAGE_INSTALL:append = " openssh strace"
+
+Use of the syntax is important; specifically, the leading space after the opening quote and before the first package name.
+
+In its simplest use, IMAGE_INSTALL:append affects all images. It is possible to extend the syntax so that the variable applies to a specific image only. Here is an example:
+
+IMAGE_INSTALL:append:pn-core-image-minimal = " openssh strace"
+
+You can add packages using a similar approach through the CORE_IMAGE_EXTRA_INSTALL variable. If you use this variable, only core-image-* images are affected.
+
+CORE_IMAGE_EXTRA_INSTALL:append = " openssh strace"
+
+
+
+core-image-sato
+----------------
+
+This is the X11 Window-system-based image with a SATO theme and a GNOME mobile desktop environment.
+
+$ bitbake core-image-sato
+
+
+
+
+Saving disk space while building 
+--------------------------------
+
+The Yocto Build System can take a lot of disk space during build. But bitbake provides options to preserve disk space.
+
+You can tell bitbake to delete all the source code, build files after building a particular recipe by adding the following line in "local.conf" file:
+
+INHERIT += "rm_work"
+
+Disadvantage: difficult to debug while build fails of any recipe.
+
+AIf you want to exclude bitbake deleting source code of a particular package, you can add it in RM_WORK_EXCLUDE += "recipe-name"
+
+E.g: RM_WORK_EXCLUDE += "core-image-minimal"
+
+
+

@@ -1,0 +1,117 @@
+Exploring layers
+================
+
+What is the BSP Layer?
+-------------------
+
+A Board Support Package (BSP) is a collection of information that defines how to support a particular hardware device, set of devices, or hardware platform. 
+
+The BSP includes information about the hardware features present on the device and kernel configuration information along with any additional hardware drivers required. 
+
+The BSP also lists any additional software components required in addition to a generic Linux software stack for both essential and optional platform features.
+
+Naming Convention: meta-<bsp_name>
+
+The string “meta-” is prepended to the machine or platform name.
+
+
+
+How to find out which hardware devices are supported
+----------------------------------------------------
+
+'conf/machine/*.conf' list all the hardware devices supported by the BSP layer.
+
+
+
+meta-yocto-bsp
+--------------
+
+	- Provides "reference" BSPs for each of the supported architectures
+	- It is based on the mainline kernel/bootloader
+	- Does not support any advanced features or anything not in the upstream mainline kernel
+	- e.g. no capes, no power management, no hardware acceleration, no 3D, no PRU, etc.
+	- The purpose of this BSP is to have some basic out-of-box experience for the select hardware platforms within Poky to evaluate the Yocto Project and OpenEmbedded framework, but not the specific hardware platforms
+
+
+
+meta-ti
+----------
+
+The official OpenEmbedded/Yocto BSP layer for Texas Instruments platforms.
+
+Most of the advanced features and peripheral support for the wider range of latest TI platforms.
+
+$ git clone git://git.yoctoproject.org/meta-ti
+
+
+
+Adding Layers
+--------------
+
+Two ways:
+
+1. Manual: 
+	- Edit bblayers.conf file and add the new layer to BBLAYERS
+
+2. Automatic: 
+	- $ bitbake-layers add-layer <path-to-new-layer>
+
+
+
+Steps for building
+-------------------
+
+Step1: 
+	
+	- Source the environment script
+
+	$ source poky/oe-init-build-env
+
+	- Add the meta-ti layer
+
+	$ bitbake-layers add-layer ../meta-ti/
+
+Step2: 
+
+	- Open local.conf and set Machine to beaglebone
+	
+	MACHINE='beaglebone'
+
+Step3: 
+
+	- Also add INHERIT += "rm_work" to save disk space
+
+Step4: 
+
+	- Generate an minimal image
+
+	$ bitbake core-image-minimal
+
+Step5: 
+
+	- Once the build finished, you will find the output images under "$BUILDDIR/tmp/deploy/images/beaglebone"  
+
+
+
+Flashing the image on the sd card using wic
+-------------------------------------------
+
+wic images are SD Card images and can be directly written into a sd card.
+
+The file 'core-image-minimal-beaglebone.wic.xz' is a compressed wic image.
+
+It can be uncompressed using the 'unxz' utility.
+
+$ unxz core-image-minimal-beaglebone.wic.xz
+
+$ ls -lh core-image-minimal-beaglebone.wic
+
+Flash it to the sd card.
+
+$ lsblk
+
+$ sudo dd if=core-image-minimal-beaglebone.wic of=/dev/sdb bs=4096 status=progress && sync
+
+
+
+

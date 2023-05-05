@@ -1,0 +1,180 @@
+Introduction
+============
+
+
+
+Four elements of embedded Linux
+--------------------------------
+
+Every project begins by obtaining, customising, and deploying these four elements:
+
+	- Toolchain: The compiler and other tools needed to create code for your target device. Everything else depends on the toolchain.
+	- Bootloader: The program that initialises the board and loads the Linux kernel.
+	- Kernel: This is the heart of the system, managing system resources and interfacing with hardware.
+	- Root filesystem: Contains the libraries and programs that are run once the kernel has completed its initialisation.
+
+One more element can be a collection of programs specific to the embedded application which make the device do whatever it is supposed to do.
+
+
+
+The Yocto Project
+----------------------
+
+Why the name? Yocto is the smallest SI metric system prefix (y = 10^-24).
+
+The Yocto project (https://www.yoctoproject.org) is an open source collaboration project that helps developers create custom Linux-based systems regardless of the hardware architecture.
+
+The project, founded in 2010, in an effort to reduce work duplication, provides a flexible set of tools and a space where embedded developers worldwide can share technologies, software stacks, configurations, and best practices that can be used to create tailored Linux images for embedded and IOT devices, or anywhere a customised Linux OS is needed.  
+
+Collaboration of:
+
+	- many hardware manufacturers
+	- open source operating systems vendors and
+	- electronics companies
+
+Yocto is also a project working group of the Linux Foundation.
+	
+To understand the outcome provided by the Yocto Project, we can use the analogy of the computing machine:
+
+	- Input: Set of data that describes what we want, that is, our specification (kernel configuration, hardware, packages/binaries to be installed)
+	- Output: Linux-based Embedded Product (Linux kernel, root file system, bootloader, device tree, toolchain)
+
+
+
+Advantages of Yocto Project
+----------------------------
+
+1. Widely adopted across the industry
+
+	- Semiconductor, operating system, software, and service vendors exist whose products and services adopt and support the Yocto Project.
+	- Eg. Intel, Facebook, ARM, Juniper Networks, LG, AMD, NXP, DELL
+
+2. Architecture agnostic
+
+	- Supports Intel, ARM, MIPS, AMD, PPC and other architectures.
+	- Chip vendors create and supply BSPs that support their hardware.
+	- If you have custom silicon, you can create a BSP that supports that architecture.
+	- The Yocto Project fully supports a wide range of device emulation through the Quick EMUlator (QEMU).
+
+3. Images and code transfer easily
+
+	- The Yocto Project output can easily move between architectures without moving to new development environments.
+
+4. Flexibility
+
+	- Through customisation and layering, a project group can leverage the base Linux distribution to create a distribution that works for their product needs.
+
+5. Ideal for constrained embedded and IoT devices
+
+	- Unlike a full Linux distribution, you can use the Yocto Project to create exactly what you need for embedded devices.
+	- You only add the feature support or packages that you absolutely need for the device.
+
+6. Uses a Layer Model
+
+	- The Yocto Project layer infrastructure groups related functionality into separate bundles.
+	- You can incrementally add these grouped functionalities to your project as needed.
+	- Allows you to easily extend the system, make customisations, and keep functionality organised.
+	
+
+
+Poky
+----
+
+Poky is a reference distribution of the Yocto Project. The word "reference" is used to mean "example" in this context.
+
+The Yocto Project uses Poky to build images (kernel, system, and application software) for the targeted hardware.
+
+At the technical level it is a combined repository of:
+
+	- Bitbake
+	- OpenEmbedded-core
+	- meta-yocto-bsp
+	- Documentation
+
+Note: Poky does not contain binary files. It is a working example of how to build your own custom Linux distribution from source.
+
+The exact difference between Yocto and Poky is Yocto refers to the organisation. Like one would refer to 'Canonical' (the company behind Ubuntu), and Poky refers to the actual distribution (analogous to 'Ubuntu')
+
+
+
+Bitbake
+-----------
+
+Bitbake is a core component of the Yocto Project. 
+
+It basically performs the same functionality as of make.
+
+It's a task scheduler that parses python and shell script mixed code
+
+The code parsed generates and runs tasks, which are basically a set of steps ordered according to code's dependencies.
+
+It reads recipes and follows them by fetching packages, building them and incorporating the results into bootable images.
+
+It keeps track of all tasks being processed in order to ensure completion, maximising the use of processing resources to reduce build time and being predictable.
+
+
+
+
+OpenEmbedded-core (oe-core)
+---------------------------
+
+The Yocto Project and OpenEmbedded have agreed to work together and share a common core set of metadata (recipes, classes and associated files) called openembedded-core (oe-core).
+
+However, the two organisations remain separate, each with its own focus.
+
+OpenEmbedded provides a comprehensive set of metadata for a wide variety of architectures, features, and applications
+
+	- Not a reference distribution.
+	- Designed to be the foundation for others
+
+The Yocto Project focuses on providing powerful, easy-to-use, interoperable, well-tested tools, metadata, and board support packages (BSPs) for a core set of architectures and specific boards.
+
+
+
+Metadata 
+-------------
+
+Non Yocto: a set of data that describes and gives information about other data.
+
+Yocto world: 
+
+	- Metadata refers to the build instructions.
+	- Commands and data used to indicate what versions of software are used.
+	- Where they are obtained from.
+	- Changes or additions to the software itself (patches) which are used to fix bugs or customise the software for use in a particular situation.
+
+Metadata is collection of:
+
+	- Configuration files (.conf)
+	- Recipes (.bb and .bbappend)
+	- Classes (.bbclass)
+	- Includes (.inc)
+
+
+
+meta-yocto-bsp
+----------------
+
+A Board Support Package (BSP) is a collection of information that defines how to support a particular hardware device, set of devices, or hardware platform.
+
+The BSP includes information about the hardware features present on the device and kernel configuration information along with any additional hardware drivers required.
+
+The BSP also lists any additional software components required in addition to a generic Linux software stack for both essential and optional platform features.
+
+The meta-yocto-bsp layer in Poky maintains several BSP such as:
+
+	- Texas Instruments BeagleBone (beaglebone)
+	- Freescale MPC8315E-RDB (mpc8315e-rdb)
+	- Intel x86-based devices (x86 and x86-64)
+	- Ubiquiti Networks EdgeRouter Lite (edgerouter)
+
+Note: To develop on different hardware, you will need to complement Poky with hardware-specific Yocto layers.
+
+
+
+Others
+--------
+
+meta-poky, which is Poky-specific metadata
+
+Documentation, which contains the Yocto Project source files used to make the set of user manuals.

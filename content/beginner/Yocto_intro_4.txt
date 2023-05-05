@@ -1,0 +1,199 @@
+Yocto Project concepts
+======================
+
+
+
+Bitbake
+-------
+
+BitBake is the tool at the heart of the OpenEmbedded Build System and is responsible for parsing the Metadata, generating a list of tasks from it, and then executing those tasks.
+
+To see a list of the options BitBake supports, use the following command:
+
+$ bitbake -h 
+
+The most common usage for BitBake is:
+
+$ bitbake <recipe name>
+
+where "recipe name" is the name of the recipe you want to build (referred to as the “target”).
+
+By default, the "build" task for the specified recipe is executed. 
+
+You can indicate which task you want to run:
+
+$ bitbake -c <task name> <recipe name>
+
+You can get a list of tasks in a recipe with:
+
+$ bitbake -c listtasks <recipe name>
+
+
+
+Poky = Bitbake + Metadata
+-------------------------
+
+Metadata is a collection of:
+
+	- Configuration files (.conf)
+	- Recipes (.bb and .bbappend)
+	- Classes (.bbclass)
+	- Includes (.inc)
+
+
+
+Configuration Files
+--------------------
+
+The configuration files define various configuration variables that govern the OpenEmbedded build process:
+
+	- Machine configuration options
+	- Distribution configuration options
+	- Compiler tuning options
+	- General common configuration options
+	- User configuration options (local.conf)
+
+They tell the build system what to build and put into the image to support a particular platform.
+
+Extension of a configuration file: .conf
+
+
+
+Recipes
+-------
+
+In general, a recipe contains information about a single piece of software. 
+
+This information includes the location from which to download the unaltered source, any source patches to be applied to that source (if needed), which special configuration options to apply, how to compile the source files, and how to package the compiled output.
+
+A recipe describes a software component:
+
+	- Where you get source code
+	- Which patches to apply
+	- Configuration options
+	- Compile options (library dependencies)
+	- Install
+	- License
+
+Extension of a recipe file: .bb
+
+Recipes used to append Metadata to other recipes are called BitBake append files. 
+
+Note: recipe names use an underscore (_). Everything else uses dashes (-).
+
+A .bbappend file allows your layer to make additions or changes to the content of another layer's recipe without having to copy the other recipe into your layer. 
+
+Being able to append information to an existing recipe not only avoids duplication, but also automatically applies recipe changes in a different layer to your layer.
+
+Your .bbappend file resides in your layer, while the main .bb recipe file to which you are appending Metadata resides in a different layer.
+
+Append files must have the same root names as their corresponding recipes. For example, the append file 'someapp_1.6.bbappend' must apply to 'someapp_1.6.bb'. 
+
+
+
+Classes
+-------
+
+Class files are used to abstract common functionality and share it amongst multiple recipe (.bb) files.
+
+Any metadata usually found in a recipe can also be placed in a class file.
+
+To use a class file, you simply make sure the recipe inherits the class:
+
+inherit <class name>
+
+In most cases, when a recipe inherits a class it is enough to enable its features. 
+
+Class files are usually placed in a classes/ directory beneath the meta*/ directory found in the source directory.
+
+Extension of a class file: .bbclass
+
+
+
+Includes
+--------
+
+As an example, suppose you have two versions of a recipe (e.g. 'foo_1.2.2.bb' and 'foo_2.0.0.bb') where each version contains some identical functionality that could be shared. 
+
+You could create an include file named 'foo.inc' that contains the common definitions needed to build “foo”. 
+
+DRY (Don't Repeat Yourself) vs WET (Write Everything Twice) principles.
+
+You need to be sure 'foo.inc' is located in the same directory as your two recipe files as well. 
+
+Once these conditions are set up, you can share the functionality using a require directive from within each recipe:
+
+require foo.inc
+
+Extension of a include file: .inc
+
+
+
+Layers
+------
+
+Layers are repositories that contain related metadata (i.e. sets of instructions) that tell the OpenEmbedded build system how to build a target.
+
+Typical naming convention: meta-<layername>
+
+Poky has the following layers:
+
+	- meta 
+	- meta-poky
+	- meta-selftest
+	- meta-skeleton
+	- meta-yocto-bsp
+
+Layers provide a mechanism to isolate metadata according to functionality. E.g., BSP, distribution configuration, etc.
+
+You can have a BSP layer, a GUI layer, a distro configuration, middleware, or an application layer. Putting your entire build into one layer limits and complicates future customisation and reuse. 
+
+Layers allow to easily add entire sets of metadata and/or replace sets with other sets. meta-poky, is itself a layer applied on top of the oe-core metadata layer, meta.
+
+The BBLAYERS variable present in the 'build/conf/bblayers.conf' file list the layers Bitbake tries to find.
+
+If 'bblayers.conf' is not present when you start the build, the OpenEmbedded build system creates it from 'bblayers.conf.sample' when you source the 'oe-init-build-env' script.
+
+You can use the following command to find out which layers are present:
+
+$ bitbake-layers show-layers
+
+You can include any number of available layers from the Yocto Project. 
+
+Or other layers from: https://layers.openembedded.org/layerindex/branch/master/layers/
+
+Or the Yocto Project compatible layers: https://www.yoctoproject.org/software-overview/layers/
+
+These layers are tested and are fully compatible with yocto project.
+
+The OpenEmbedded layer index contains more layers but the content is less universally validated.
+
+
+
+Image
+-----
+
+The OpenEmbedded build system provides several example images to satisfy different needs. 
+
+When you issue the bitbake command you provide a “top-level” recipe that essentially begins the build for the type of image you want.
+
+From within the poky git repository, you can use the following command to display the list of directories within the source directory that contain image recipe files:
+
+$ ls meta*/recipes*/images/*.bb
+
+
+
+Packages
+--------
+
+In the context of the Yocto Project, this term refers to a recipe’s packaged output produced by BitBake (i.e. a “baked recipe”). 
+
+A package is generally the compiled binaries produced from the recipe’s sources. 
+
+A package is a binary file with extension 'tar, 'rpm', 'deb', or 'ipkg'.
+
+The variable PACKAGE_CLASSES in 'local.conf' defines which packaging format(s) to use.
+
+PACKAGE_CLASSES ?= "package_rpm"
+
+During a build, BitBake always transforms a recipe into one or more packages.
