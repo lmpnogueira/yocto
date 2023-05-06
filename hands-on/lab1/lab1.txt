@@ -1,0 +1,112 @@
+Lab 1
+=====
+
+This lab steps you through the process for a typical image build using the Yocto Project.
+
+
+
+Compatible Linux Distribution
+-----------------------------
+
+Make sure your Build Host meets the following requirements:
+
+	- At least 90 Gbytes of free disk space, though much more will help to run multiple builds and increase performance by reusing build artifacts
+	- At least 8 Gbytes of RAM, though a modern modern build host with as much RAM and as many CPU cores as possible is strongly recommended to maximize build performance
+	- Runs a supported Linux distribution (i.e. recent releases of Fedora, openSUSE, CentOS, Debian, or Ubuntu).
+	- For a list of Linux distributions that support the Yocto Project, see the Supported Linux Distributions section in the Yocto Project Reference Manual
+	- The OpenEmbedded build system should be able to run on any modern distribution that has the following versions for Git, tar, Python, gcc and make:
+		- Git 1.8.3.1 or greater
+		- tar 1.28 or greater
+		- Python 3.8.0 or greater
+		- gcc 8.0 or greater
+		- GNU make 4.0 or greater
+
+
+Build Host Packages
+-------------------
+
+Packages and package installation vary depending on your development system.
+
+(*) Install the required packages for Yocto from https://docs.yoctoproject.org/ref-manual/system-requirements.html#required-packages-for-the-build-host
+
+
+$ sudo apt install gawk wget git diffstat unzip texinfo gcc build-essential \ 
+    chrpath socat cpio python3 python3-pip python3-pexpect xz-utils debianutils \ 
+    iputils-ping python3-git python3-jinja2 libegl1-mesa libsdl1.2-dev pylint3 \ 
+    xterm python3-subunit mesa-common-dev zstd liblz4-tool
+
+
+
+Use Git to Clone Poky
+---------------------
+
+Once you complete the setup instructions for your machine, you need to get a copy of the Poky repository on your build host. 
+
+Use the following command to clone the Poky repository:
+
+$ git clone git://git.yoctoproject.org/poky
+
+Then move to the poky directory and take a look at existing branches:
+
+$ cd poky
+$ git branch -a
+
+Choose a release codename (such as Kirkstone), corresponding to either the latest stable release or a Long Term Support release.
+
+$ git checkout -t origin/kirkstone -b my-kirkstone
+
+Note that you can regularly type the following command in the same directory to keep your local files in sync with the release branch:
+
+$ git pull
+
+
+
+Building Your Image
+-------------------
+
+Use the following steps to build your image. 
+
+The build process creates an entire Linux distribution, including the toolchain, from source.
+
+1. Initialize the build environment: 
+
+From within the poky directory, run the 'oe-init-build-env' environment setup script to define Yocto Project’s build environment on your build host.
+
+$ source oe-init-build-env
+
+
+2. Examine your local configuration file: 
+
+When you set up the build environment, a local configuration file named 'local.conf' becomes available in a 'conf' subdirectory of the Build Directory. 
+
+For this example, the defaults are set to build for a qemux86 target, which is suitable for emulation. 
+
+The package manager used is set to the RPM package manager.
+
+
+3. Start the build: 
+
+Continue with the following command to build an OS image for the target, which is 'core-image-sato' in this example:
+
+$ bitbake core-image-sato
+
+
+4. Simulate your image using QEMU: 
+
+Once this particular image is built, you can start QEMU, which is a Quick EMUlator that ships with the Yocto Project:
+
+$ runqemu qemux86-64
+
+
+5. Exit QEMU: 
+
+Exit QEMU by either clicking on the shutdown icon or by typing Ctrl-C in the QEMU transcript window from which you evoked QEMU.
+
+
+
+Challenge
+---------
+
+Generate an arm64 'core-image-minimal' image and run it in QEMU with the 'nographic' option
+
+
