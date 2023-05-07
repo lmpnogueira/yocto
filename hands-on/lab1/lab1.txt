@@ -107,6 +107,8 @@ Exit QEMU by either clicking on the shutdown icon or by typing Ctrl-C in the QEM
 Challenge
 ---------
 
-Generate an arm64 'core-image-minimal' image and run it in QEMU with the 'nographic' option
+Generate an arm64 'core-image-minimal' image and run it in QEMU with the 'nographic' option.
+
+Add the "openssh" package to your build.
 
 

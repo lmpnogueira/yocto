@@ -100,17 +100,17 @@ wic images are SD Card images and can be directly written into a sd card.
 
 The file 'core-image-minimal-beaglebone.wic.xz' is a compressed wic image.
 
-It can be uncompressed using the 'unxz' utility.
+You can use the bmap-tools:
 
-$ unxz core-image-minimal-beaglebone.wic.xz
+	$ sudo bmaptool copy core-image-minimal-beaglebone.wic.bz2 /dev/sdb
 
-$ ls -lh core-image-minimal-beaglebone.wic
+Or do it yourself manually:
 
-Flash it to the sd card.
+	- Uncompress the image using the 'unxz' utility:
+	$ unxz core-image-minimal-beaglebone.wic.xz
 
-$ lsblk
-
-$ sudo dd if=core-image-minimal-beaglebone.wic of=/dev/sdb bs=4096 status=progress && sync
+	- Flash it to the sd card:
+	$ sudo dd if=core-image-minimal-beaglebone.wic of=/dev/sdb bs=4096 status=progress && sync
 
 
 

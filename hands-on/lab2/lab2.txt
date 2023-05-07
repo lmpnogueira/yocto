@@ -1,0 +1,187 @@
+Lab 2
+=====
+
+This lab steps you through the process for a typical image build for the Raspberry Pi 4 using the Yocto Project. 
+
+It allows you to explore layers. 
+
+The Yocto Project’s “Layer Model” is a development model for embedded and IoT Linux creation that distinguishes the Yocto Project from other simple build systems.
+
+Note: select the same branch supported by all layers that you use in this lab.
+
+
+
+Raspberry Pi layer
+------------------
+
+Go to OpenEmbedded Layers (https://layers.openembedded.org/layerindex/branch/master/layers/) to search for layers "raspberrypi". 
+
+In this example, we are going to use the branch kirkstone.
+
+https://layers.openembedded.org/layerindex/branch/kirkstone/layer/meta-raspberrypi/
+
+Read the overview to get some main points:
+
+Repo: git://git.yoctoproject.org/meta-raspberrypi
+	- Branch: kirkstone
+	- Readme: https://git.yoctoproject.org/meta-raspberrypi/tree/README.md?h=dunfell
+
+Dependencies:
+	- Repo: git://git.openembedded.org/meta-openembedded
+	- Branch: kirkstone
+	- Layers: meta-oe, meta-python, meta-multimedia, meta-networking
+
+
+
+Get meta-raspberrypi
+--------------------
+
+$ git clone -b kirkstone \
+    git://git.yoctoproject.org/meta-raspberrypi.git
+
+
+
+Check the supported hardware
+----------------------------
+
+$ ls meta-raspberrypi/conf/machine/
+
+
+
+Check the supported images
+--------------------------
+
+$ ls meta-raspberrypi/recipes-core/images
+
+There are three images that you can build:
+	- rpi-hwup-image.bb: image based on core-image-minimal
+	- rpi-basic-image.bb: image based on 'rpi-hwup-image.bb', with some added features (a splash screen)
+	- rpi-test-image.bb: image based on 'rpi-basic-image.bb', which includes some packages present in "meta-raspberrypi"
+
+
+
+Get meta-openembedded
+---------------------
+
+$ git clone -b kirkstone \
+    git://git.openembedded.org/meta-openembedded
+
+
+Note: once you complete cloning, there should be three folders: poky, meta-openembedded, and meta-raspberrypi
+
+
+
+Create the build folder
+-----------------------
+
+Run the environment script to setup the Yocto Environment and create build directory:
+
+$ cd poky
+$ source oe-init-build-env
+
+
+
+Add the needed layers
+---------------------
+
+Add the meta-openembedded layers (meta-oe, meta-multimedia, meta-networking, and meta-python) and the meta-raspberrypi layer to 'conf/bblayers.conf'.
+
+$ bitbake-layers add-layer ../../meta-openembedded/meta-oe
+$ bitbake-layers add-layer ../../meta-openembedded/meta-python
+$ bitbake-layers add-layer ../../meta-openembedded/meta-multimedia
+$ bitbake-layers add-layer ../../meta-openembedded/meta-networking
+$ bitbake-layers add-layer ../../meta-raspberrypi
+
+Check the resulting layer configuration:
+
+$ bitbake-layers show-layers
+
+
+
+Set build configs
+-----------------
+
+Edit 'conf/local.conf':
+
+	- Set the MACHINE to "raspberrypi4-64" (depending on which Raspberry Pi you want to use)
+
+	- Uncomment the following lines:
+
+		- DL_DIR ?= "${TOPDIR}/downloads"
+		- SSTATE_DIR ?= "${TOPDIR}/sstate-cache"
+		- TMPDIR = "${TOPDIR}/tmp"
+
+	- Add the following lines at the end, to get a 'sdimg' image file to flash to a SD card:
+
+		- IMAGE_FSTYPES = "ext4.xz rpi-sdimg"
+		- SDIMG_ROOTFS_TYPE = "ext4.xz"
+
+	- Add INHERIT +="rm_work" to save disk space on your build machine
+
+
+Check the build configuration:
+
+$ bitbake core-image-minimal -n
+
+
+
+Build your image
+----------------
+
+Now you have minimal settings to build the first image:
+
+$ bitbake -k core-image-minimal
+
+
+
+Extra Raspberry Pi configurations
+---------------------------------
+
+To set specific hardware settings, you can have a look to 'extra-apps.md' and 'extra-build-config.md'. 
+
+You find this files in the 'meta-raspberrypi/docs' directory.
+
+The meta layer also provides a image configuration "rpi-test-image" to use with bitbake. 
+
+The image is based on "core-image-base" which includes most of the packages in meta-raspberrypi and some media samples.
+
+$ bitbake -k rpi-test-image
+
+
+
+Extra software configurations
+-----------------------------
+
+Depending on what image build configuration you are using, you might need to install additional software packages.
+
+You can do this, by adding some settings to the 'local.conf' file.
+
+For example add the following lines, to set ssh-server, pi-user and systemd:
+
+	## packages
+	IMAGE_INSTALL:append = " openssh-sftp-server sudo python3 python3-pip rpi-gpio raspi-gpio"
+	IMAGE_FEATURES:append = " ssh-server-openssh"
+
+	## systemd settings
+	DISTRO_FEATURES:append = " systemd"
+	VIRTUAL-RUNTIME:init_manager = "systemd"
+	VIRTUAL-RUNTIME:initscripts = ""
+	IMX_DEFAULT_DISTRO_FEATURES:append = " systemd"
+
+Or add python:
+
+	IMAGE_INSTALL:append = " python3 python3-pip rpi-gpio raspi-gpio"
+
+
+Note: The beginning space in " python3 python3-pip rpi-gpio raspi-gpio" is important, because the text is appended to existing configuration and needs to be separated with this space.
+
+
+
+Flashing images on a SD card
+----------------------------
+
+The generated images are present in 'tmp/deploy/images/raspberrypi4-64' (or at the particular Raspberry version directory you selected)
+
+Copy the 'sdimg' image file to a SD card:
+
+$ sudo dd if=rpi-hwup-image-raspberrypi3.rpi-sdimg of=/dev/sdb bs=4096 && sync
