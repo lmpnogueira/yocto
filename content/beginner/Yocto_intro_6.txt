@@ -1,6 +1,14 @@
 Exploring layers
 ================
 
+This section gives you a minimal description of how to use the Yocto Project to build images for Beaglebone hardware starting from scratch. 
+
+The Beaglebone Black is a low-cost ARM Cortex-A8-based development board. 
+
+The Yocto Project officially supports the Beaglebone board and provides a minimal bootable BSP support. 
+
+
+
 What is the BSP Layer?
 -------------------
 
@@ -65,27 +73,35 @@ Step1:
 	
 	- Source the environment script
 
-	$ source poky/oe-init-build-env
+		$ source poky/oe-init-build-env
 
 	- Add the meta-ti layer
 
-	$ bitbake-layers add-layer ../meta-ti/
+		$ bitbake-layers add-layer ../meta-ti/
 
 Step2: 
 
 	- Open local.conf and set Machine to beaglebone
 	
-	MACHINE='beaglebone'
+		MACHINE='beaglebone'
 
 Step3: 
 
-	- Also add INHERIT += "rm_work" to save disk space
+	- You can also set BB_NUMBER_THREADS and PARALLEL_MAKE to twice your host processor's number of cores
+
+		BB_NUMBER_THREADS = "8"
+     	PARALLEL_MAKE = "-j 8"
+
+	- Also, add this to ease your hard drive demands during builds
+
+		INHERIT += "rm_work" 
+
 
 Step4: 
 
 	- Generate an minimal image
 
-	$ bitbake core-image-minimal
+		$ bitbake -k core-image-minimal
 
 Step5: 
 

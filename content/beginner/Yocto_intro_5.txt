@@ -165,10 +165,10 @@ However, you must manually add any custom layers you have created.
 E.g: 
 
 BBLAYERS = "\
-	/home/luis/poky/meta \
-	/home/luis/poky/meta-poky \
-	/home/luis/poky/meta-yocto-bsp \
-	/home/luis/poky/meta-mylayer \
+	/home/luis/yocto/poky/meta \
+	/home/luis/yocto/poky/meta-poky \
+	/home/luis/yocto/poky/meta-yocto-bsp \
+	/home/luis/yocto/meta-mylayer \
 	"
 
 This example enables four layers, one of which is a custom user defined layer named "meta-mylayer"

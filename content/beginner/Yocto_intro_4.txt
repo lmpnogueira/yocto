@@ -132,7 +132,7 @@ Extension of a include file: .inc
 Layers
 ------
 
-Layers are repositories that contain related metadata (i.e. sets of instructions) that tell the OpenEmbedded build system how to build a target.
+Layers are folders/repositories that contain related metadata (i.e. sets of instructions) that tell the OpenEmbedded build system how to build a target.
 
 Typical naming convention: meta-<layername>
 
@@ -158,15 +158,14 @@ You can use the following command to find out which layers are present:
 
 $ bitbake-layers show-layers
 
-You can include any number of available layers from the Yocto Project. 
 
-Or other layers from: https://layers.openembedded.org/layerindex/branch/master/layers/
+You can create your own layer or include any number of available layers from:
+	- OpenEmbedded Layer Index, available at https://layers.openembedded.org/
+	- Yocto Project Compatible Layer Index, available athttps://www.yoctoproject.org/software-overview/layers/
 
-Or the Yocto Project compatible layers: https://www.yoctoproject.org/software-overview/layers/
+The OpenEmbedded Layer Index contains more layers, but the content is less universally validated.
 
-These layers are tested and are fully compatible with yocto project.
-
-The OpenEmbedded layer index contains more layers but the content is less universally validated.
+The layers in the Yocto Project Compatible Layer Index are tested and are fully compatible with the Yocto Project.
 
 
 
