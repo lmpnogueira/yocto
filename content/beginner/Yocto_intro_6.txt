@@ -90,9 +90,9 @@ Step3:
 	- You can also set BB_NUMBER_THREADS and PARALLEL_MAKE to twice your host processor's number of cores
 
 		BB_NUMBER_THREADS = "8"
-     	PARALLEL_MAKE = "-j 8"
+		PARALLEL_MAKE = "-j 8"
 
-	- Also, add this to ease your hard drive demands during builds
+	- Also, you can also add this to ease your hard space drive demands during builds
 
 		INHERIT += "rm_work" 
 

@@ -42,6 +42,10 @@ Use Git to Clone Poky
 
 Once you complete the setup instructions for your machine, you need to get a copy of the Poky repository on your build host. 
 
+Create a directory for your projects:
+
+$ mkdir yocto; cd yocto/
+
 Use the following command to clone the Poky repository:
 
 $ git clone git://git.yoctoproject.org/poky
@@ -64,31 +68,43 @@ $ git pull
 Building Your Image
 -------------------
 
-Use the following steps to build your image. 
-
 The build process creates an entire Linux distribution, including the toolchain, from source.
+
+Use the following steps to build your image:
 
 1. Initialize the build environment: 
 
-From within the poky directory, run the 'oe-init-build-env' environment setup script to define Yocto Project’s build environment on your build host.
+From within your project's directory (in this example, 'yocto'), run the 'oe-init-build-env' environment setup script to define the Yocto Project’s build environment on your build host.
 
-$ source oe-init-build-env
+$ source poky/oe-init-build-env
+
+This creates and moves you to a 'build' subdirectory in your project's directory (~/yocto/build/).
 
 
 2. Examine your local configuration file: 
 
 When you set up the build environment, a local configuration file named 'local.conf' becomes available in a 'conf' subdirectory of the Build Directory. 
 
-For this example, the defaults are set to build for a qemux86 target, which is suitable for emulation. 
+The defaults are set to build for a qemux86 target, which is suitable for emulation. 
 
 The package manager used is set to the RPM package manager.
+
+Uncomment the following lines:
+
+	- DL_DIR ?= "${TOPDIR}/../downloads"
+	- SSTATE_DIR ?= "${TOPDIR}/../sstate-cache"
+
+You can also set BB_NUMBER_THREADS and PARALLEL_MAKE to twice your host processor's number of cores (add these lines to the end of the file):
+
+	- BB_NUMBER_THREADS = "8"
+    - PARALLEL_MAKE = "-j 8"
 
 
 3. Start the build: 
 
-Continue with the following command to build an OS image for the target, which is 'core-image-sato' in this example:
+Continue with the following command to build an OS image for the target, which is 'core-image-minimal' in this example:
 
-$ bitbake core-image-sato
+$ bitbake core-image-minimal
 
 
 4. Simulate your image using QEMU: 
@@ -107,7 +123,9 @@ Exit QEMU by either clicking on the shutdown icon or by typing Ctrl-C in the QEM
 Challenge
 ---------
 
-Generate an arm64 'core-image-minimal' image and run it in QEMU with the 'nographic' option.
+Run the image in QEMU with the 'nographic' option.
+
+Generate an arm64 'core-image-sato' image and run it in QEMU (tip: build it with the -k option).
 
 Add the "openssh" package to your build.
 
