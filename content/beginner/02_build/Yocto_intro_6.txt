@@ -1,0 +1,338 @@
+Syntax and Operators
+====================
+
+BitBake files have their own syntax. 
+
+The syntax has similarities to several other languages but also has some unique features.
+
+
+
+Basic Variable Setting (=)
+--------------------------
+
+This assignment occurs immediately as the statement is parsed.
+
+Here is an example:
+
+	MACHINE = "raspberrypi3"
+
+It is a "hard" assignment.
+
+If you include leading or trailing spaces as part of an assignment, the spaces are retained:
+
+	VARIABLE = " value"
+	VARIABLE = "value "
+
+You can also use single quotes ('') instead of double quotes when setting a variable's value. 
+
+Doing so allows you to use values that contain the double quote character.
+
+	VARIABLE = 'I have a " in my value'
+
+
+
+How to check the value of variable?
+--------------------------------------
+
+If after you have changed a variable’s value and something unexplained occurs, you can use BitBake to check the actual value of the suspect variable. 
+
+You can make these checks for both configuration and recipe level changes
+
+For configuration changes, use the following:
+
+$ bitbake -e
+
+This command displays variable values after the configuration files (i.e. 'local.conf', 'bblayers.conf', 'bitbake.conf' and so forth) have been parsed.
+
+For recipe changes, use the following:
+
+$ bitbake <recipe_name> -e | grep ^VARIABLE=
+
+
+
+Line joining
+------------
+
+BitBake joins any line ending in a backslash character ("\") with the following line before parsing statements.
+
+The most common use for the "\" character is to split variable assignments over multiple lines:
+
+	BBLAYERS ?= " \
+		/home/luis/yocto/poky/meta \
+		/home/luis/yocto/poky/meta-poky \
+		/home/luis/yocto/poky/meta-yocto-bsp \
+	"
+
+Both the “\” character and the newline character that follow it are removed when joining lines. 
+
+Thus, no newline characters end up in the value of the variable.
+
+
+
+
+Setting a default value(?=)
+----------------------------
+
+The operator ?= is used for soft assignment for a variable.
+
+Allows you to define a variable if it is undefined when the statement is parsed.
+
+If the variable has a value, then the soft assignment is lost.
+
+Here is an example:
+
+	MACHINE ?= "qemuarm"
+
+If MACHINE is already set before this statement is parsed, the above value is not assigned.
+
+If MACHINE is not set, then the above value is assigned.
+
+	VARIABLE = "set value"
+	VARIABLE ?= "default value" # this does nothing
+
+Assignment is immediate.
+
+Consequently, if multiple “?=” assignments to a single variable exist, the first of those ends up getting used.
+
+Here is an example:
+
+	VARIABLE ?= "value 1" # this wins
+	VARIABLE ?= "value 2"
+
+
+
+Setting a weaker default value (??=)
+------------------------------------
+
+A weaker default value is achieved using the ??= operator.
+
+Assignment is made at the end of the parsing process rather than immediately.
+
+Consequently, when multiple "??=" assignments exist, the last one is used
+
+Here is an example:
+
+	MACHINE ??= "qemux86"
+	MACHINE ??= "qemuarm"
+
+If MACHINE is not set, the value of MACHINE = "qemuarm".
+
+If MACHINE is set, before the statements, then the value will not be changed.
+
+It is called weak assignment, as assignment does not occur until the end of the parsing process.
+
+Note: "=" or "?=" assignment will override the value set with "??=".
+
+Here is an example:
+
+	VARIABLE ??= "value 1"
+	VARIABLE  ?= "value 2" 	# this wins
+
+Another example:
+
+	VARIABLE ??= "value 1"
+	VARIABLE   = "value 3" 	# this always wins
+	VARIABLE  ?= "value 2"
+
+
+
+Variable Expansion
+-------------------
+
+Variables can reference the contents of other variables using a syntax that is similar to variable expansion in Bourne shells.
+
+Here is an example:
+
+	A = "hello"
+	B = "${A} world"
+
+The "=" operator does not immediately expand variable references in the right-hand side.
+
+Instead, expansion is deferred until the variable assigned to is actually used.
+
+Here is an example:
+
+	A = "${B} hello" 
+	B = "${C} world"
+	C = "linux"
+
+The variable A, if used here, contains "linux world hello".
+
+What happens if C is not defined above?
+
+The string is kept as is, and ${A} equals "\${C} world hello"
+
+Another example:
+
+	A = "${B} baz"
+	B = "${C} bar"
+	C = "foo"			# At this point, ${A} equals "foo bar baz"
+	C = "qux"			# At this point, ${A} equals "qux bar baz"
+	B = "norf"		# At this point, ${A} equals "norf baz"
+
+
+
+Immediate Variable Expansion (:=)
+-----------------------------------
+
+The ":=" operator results in a variable's contents being expanded immediately, rather than when the variable is actually used.
+
+Here is an example:
+
+	T = "123"
+	A := "test ${T}"
+	T = "456"
+	B := "${T} ${C}"
+	C = "cval"
+	C := "${C}append"
+
+In this example, A contains “test 123”, even though the final value of T is “456”. 
+
+The variable B will end up containing “456 cvalappend”. 
+
+
+
+Appending (+=) and prepending (=+) with spaces
+----------------------------------------------
+
+Appending and prepending values is common and can be accomplished using the “+=” and “=+” operators. 
+
+These operators insert a space between the current value and prepended or appended value.
+
+These operators take immediate effect during parsing. 
+
+Here are some examples:
+
+	A = "hello"
+	A += "world"
+
+The variable A contains "hello world".
+
+	A = "hello"
+	A =+ "world"
+
+The variable A contains "world hello".
+
+
+
+Appending (.=) and prepending (=.) without spaces
+-------------------------------------------------
+
+If you want to append or prepend values without an inserted space, use the “.=” and “=.” operators.
+
+These operators take immediate effect during parsing. 
+
+Here are some examples:
+
+	B = "bval"
+	B .= "additionaldata"
+	C = "cval"
+	C =. "test"
+
+The variable B contains “bvaladditionaldata” and C contains “testcval”.
+
+
+
+Appending and prepending (override style syntax)
+------------------------------------------------
+
+You can also append and prepend a variable's value using an override style syntax.
+
+When you use this syntax, no spaces are inserted.
+
+Here are some examples:
+
+	B = "bval"
+	B:append = " additional data"
+	C = "cval"
+	C:prepend = "additional data "
+	D = "dval"
+	D:append = "additional data"
+	
+The variable B becomes “bval additional data” and C becomes “additional data cval”. 
+
+The variable D becomes “dvaladditional data”.
+
+These operators differ from the “:=”, “.=”, “=.”, “+=”, and “=+” operators in that their effects are applied at variable expansion time rather than being immediately applied.
+
+
+
+Removal (override style syntax)
+-------------------------------
+
+You can remove values from lists using the removal override style syntax
+
+Specifying a value for removal causes all occurrences of that value to be removed from the variable.
+
+Unlike “:append” and “:prepend”, there is no need to add a leading or trailing space to the value.
+
+Surrounding spaces and spacing are preserved. 
+
+Here is an example:
+
+	F1 = "123 456 789 123456 123 456 123 456"
+	F1:remove = "123"
+	F1:remove = "456"
+	F2 = " abc def ghi abcdef abc def abc def def"
+	F2:remove = "\
+		def \
+		abc \
+		ghi \
+	"
+
+The variable F1 becomes “ 789 123456 “ and F2 becomes “ abcdef “.	
+
+Like “:append” and “:prepend”, “:remove” is applied at variable expansion time.
+
+
+
+Override style operation advantages
+-----------------------------------
+
+An advantage of the override style operations “:append”, “:prepend”, and “:remove” as compared to the “+=” and “=+” operators is that the override style operators provide guaranteed operations.
+
+Here is an example:
+
+	A += "world" 	# does not work, A is undefined
+	A  = "hello" 	# A = hello when A is used
+
+However, using overriding syntax give the intended result:
+
+	A:append = " world" 	# keep this action when A is used
+	A  = "hello" 			# A = hello world when A is used
+
+
+
+Variable flag syntax
+--------------------
+
+Variable flags are BitBake’s implementation of variable properties or attributes. 
+
+You can define, append, and prepend values to variable flags. 
+
+All the standard syntax operations previously mentioned work for variable flags except for override style syntax (i.e. “:prepend”, “:append”, and “:remove”).
+
+No need exists to pre-define variable flags. You can simply start using them.
+
+Here is an example:
+
+	F[a] = "abc"
+	F[b] = "123"
+	F[a] += "456"
+
+The variable FOO has two flags: [a] and [b]. The flags are immediately set to “abc” and “123”, respectively. The [a] flag becomes “abc 456”.
+
+
+
+Unsetting variables
+-------------------
+
+It is possible to completely remove a variable or a variable flag from BitBake’s internal data dictionary by using the “unset” keyword. 
+
+Here is an example:
+
+	unset DATE
+	unset do_fetch[noexec]
+
+These two statements remove the DATE and the do_fetch[noexec] flag.
+
