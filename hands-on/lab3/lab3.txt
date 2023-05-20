@@ -1,0 +1,16 @@
+Lab 3
+=====
+
+You can customise images to satisfy particular requirements.
+
+Repeat Lab 2, but this time create your own layer and image recipe to install the extra packages.
+
+
+Challenge
+---------
+
+Write an hello world application in C.
+
+Create a recipe for the hello world application.
+
+Modify the image recipe to add the hello world application to your image.

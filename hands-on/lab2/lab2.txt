@@ -107,12 +107,11 @@ Edit 'conf/local.conf':
 
 	- Set the MACHINE to "raspberrypi4-64" (depending on which Raspberry Pi you want to use)
 
-	- Uncomment the following lines:
+	- Uncomment and change the following lines:
 
-		- DL_DIR ?= "${TOPDIR}/downloads"
-		- SSTATE_DIR ?= "${TOPDIR}/sstate-cache"
-		- TMPDIR = "${TOPDIR}/tmp"
-
+		- DL_DIR ?= "${TOPDIR}/../downloads"
+		- SSTATE_DIR ?= "${TOPDIR}/../sstate-cache"
+	
 	- Add the following lines at the end, to get a 'sdimg' image file to flash to a SD card:
 
 		- IMAGE_FSTYPES = "ext4.xz rpi-sdimg"
@@ -160,22 +159,17 @@ You can do this, by adding some settings to the 'local.conf' file.
 
 For example add the following lines, to set ssh-server, pi-user and systemd:
 
-	## packages
+	# packages
 	IMAGE_INSTALL:append = " openssh-sftp-server sudo python3 python3-pip rpi-gpio raspi-gpio"
 	IMAGE_FEATURES:append = " ssh-server-openssh"
 
-	## systemd settings
+	# systemd settings
 	DISTRO_FEATURES:append = " systemd"
+	DISTRO_FEATURES_BACKFILL_CONSIDERED += "sysvinit"
 	VIRTUAL-RUNTIME:init_manager = "systemd"
-	VIRTUAL-RUNTIME:initscripts = ""
-	IMX_DEFAULT_DISTRO_FEATURES:append = " systemd"
+	VIRTUAL-RUNTIME:initscripts = "systemd-compat-units"
 
-Or add python:
-
-	IMAGE_INSTALL:append = " python3 python3-pip rpi-gpio raspi-gpio"
-
-
-Note: The beginning space in " python3 python3-pip rpi-gpio raspi-gpio" is important, because the text is appended to existing configuration and needs to be separated with this space.
+Note: The beginning space with :append is important, because the text is appended to existing configuration and needs to be separated with this space.
 
 
 

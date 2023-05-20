@@ -89,7 +89,7 @@ The defaults are set to build for a qemux86 target, which is suitable for emulat
 
 The package manager used is set to the RPM package manager.
 
-Uncomment the following lines:
+Uncomment and change the following lines:
 
 	- DL_DIR ?= "${TOPDIR}/../downloads"
 	- SSTATE_DIR ?= "${TOPDIR}/../sstate-cache"
@@ -97,7 +97,7 @@ Uncomment the following lines:
 You can also set BB_NUMBER_THREADS and PARALLEL_MAKE to twice your host processor's number of cores (add these lines to the end of the file):
 
 	- BB_NUMBER_THREADS = "8"
-    - PARALLEL_MAKE = "-j 8"
+	- PARALLEL_MAKE = "-j 8"
 
 
 3. Start the build: 
