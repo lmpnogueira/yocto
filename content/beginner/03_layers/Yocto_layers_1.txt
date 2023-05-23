@@ -1,0 +1,245 @@
+Layers
+======
+
+
+What is a layer?
+----------------
+
+The OpenEmbedded build system supports organising metadata into multiple layers. 
+
+The biggest strength of using layers is the ability to split metadata into logical units, which enables users to pick only the metadata collection needed for a project.
+
+Using metadata layers enables us to do the following:
+
+	- Improve code reuse
+	- Share and scale work across different teams, communities, and vendors
+	- Increase the Yocto Project community’s code quality, as multiple developers and users focus together on a particular metadata layer that is of interest to them
+
+It is easy to create your own layers to use with the OpenEmbedded build system, as the Yocto Project ships with tools that speed up creating layers. 
+
+Poky contains three layers by default, as we can see in the output of the following command line:
+
+$ bitbake-layers show-layers
+
+layer                 path                                      priority
+==========================================================================
+meta                  /home/luis/yocto/poky/meta  			5
+meta-poky             /home/luis/yocto/poky/meta-poky  		5
+meta-yocto-bsp        /home/luis/yocto/poky/meta-yocto-bsp  		5
+
+
+
+Check existing layers
+---------------------
+
+Before creating a new layer, you should be sure someone has not already created a layer containing the metadata you need. 
+
+You could find a layer that is identical or close to what you need at:
+
+	- OpenEmbedded Layer Index, available at https://layers.openembedded.org/
+	- Yocto Project Compatible Layer Index, available athttps://www.yoctoproject.org/software-overview/layers/
+
+
+
+Why create a meta layer?
+------------------------
+
+Despite most of the customisation can be done with the 'local.conf' configuration file, it is not possible to:
+
+	- Store recipes for your own software projects
+	- Create your own images
+	- Consolidate patches/modifications to other people’s recipes
+	- Add a new custom kernel
+	- Add a new machine
+
+Avoiding adding custom settings in 'build/conf/local.conf' helps to make our builds reproducible afterward.
+
+The most adequate and maintainable solution is to create a custom layer to place the particular requirements of your product.
+
+
+
+Creating a layer
+----------------
+
+Create the directory for your layer. 
+
+While not strictly required, prepend the name of the directory with the string “meta-”, e.g., "meta-mylayer".
+
+When you create the layer, be sure to create the directory in an area not associated with the Yocto Project Source Directory (e.g. the cloned poky repository).
+
+This allows you to easily port from one version of Poky to another.
+
+Usually, a layer has a directory tree, as shown:
+
+meta-mylayer/
+|
+|--classes/
+|--conf/
+|--COPYING
+|--README
+|--recipes-*
+
+
+Inside this directory are two files, 'COPYING' and 'README', a license and a message to a user respectively. 
+
+In 'README', we must specify any other dependency and information that the layer’s users need to know. 
+
+The "classes" folder should hold the classes specific to that layer (the .bbclass files). It is an optional directory.
+
+The "conf" folder is mandatory and should provide the configuration files (the .conf files). 
+
+The layer configuration file, 'conf/layer.conf', is the file with the layer definition.
+
+It is easiest to take an existing layer configuration file and copy that to your layer’s "conf" directory and then modify the file as needed.
+
+The 'meta-yocto-bsp/conf/layer.conf' file in the Yocto Project Source Repositories demonstrates the required syntax.
+
+
+
+The layer configuration file: layer.conf
+----------------------------------------
+
+# For your layer, you need to replace “mylayer” with a unique identifier for your layer
+
+# The configuration and classes directory is appended to BBPATH
+BBPATH .= ":${LAYERDIR}"
+
+# The recipes for the layers are appended to BBFILES
+BBFILES += "${LAYERDIR}/recipes-*/*/*.bb \
+		${LAYERDIR}/recipes-*/*/*.bbappend"
+
+# The BBFILE_COLLECTIONS variable is then appended with the layer name
+BBFILE_COLLECTIONS += "mylayer"
+
+# Expands immediately during parsing to provide the directory of the layer
+BBFILE_PATTERN_mylayer = "^${LAYERDIR}/"
+
+# The BBFILE_PRIORITY variable then assigns a priority to the layer 
+BBFILE_PRIORITY_mylayer = "5"
+
+# This should only be incremented on significant changes that will
+# cause compatibility issues with other layers
+LAYERVERSION_mylayer = "1"
+
+# Lists all layers on which this layer depends (if any)
+LAYERDEPENDS_mylayer = "core"
+
+# Lists the Yocto Project releases for which the current version is compatible
+LAYERSERIES_COMPAT_mylayer = "kirskstone"
+
+
+
+Layer Priority:
+---------------
+
+Each layer has a priority, which is used by bitbake to decide which layer takes precedence if there are recipe files with the same name in multiple layers.
+
+A higher numeric value represents a higher priority.
+
+Priority values also affect the order in which multiple .bbappend files for the same recipe are applied. 
+
+You can either specify the priority manually, or allow the build system to calculate it based on the layer’s dependencies.
+
+
+
+Adding metadata to the layer
+----------------------------
+
+Layer metadata can serve two goals: 
+
+	– Add new software, or feature
+	- Modify existing metadata
+
+We can include several metadata files on a new layer, such as recipes, images, and bbappend files.
+
+Depending on the type of layer, add the content:
+
+	- If the layer is adding support for a machine, add the machine configuration in "conf/machine/"
+	- If the layer is adding a distro policy, add the distro configuration in "conf/distro/"
+	- If the layer introduces new recipes, put the recipes you need in "recipes-*" subdirectories of the layer directory
+
+The "recipe-*" folder is a cluster of recipes separated by category – for example, "recipes-core", "recipes-bsp", "recipes-graphic", "recipes-multimedia", and "recipes-kernel". 
+
+Inside each folder, there is a directory with the recipe name or a group of recipes. 
+
+Inside it, the recipe files are placed, whose names end with .bb or .bbappend.
+
+A difficult part is deciding in which category your recipe will go.
+
+By checking what was already done in the official layers should give you a good idea of what you should do.
+
+
+
+Enabling your layer
+-------------------
+
+Before BitBake can use your new layer, you need to enable it. 
+
+To enable your layer, simply add your layer’s path to the BBLAYERS variable in your 'build/conf/bblayers.conf' file.
+
+The following example shows how to enable your new meta-mylayer layer (note how your new layer exists outside of the official poky repository which you would have checked out earlier):
+
+BBLAYERS ?= " \
+  /home/luis/yocto/poky/meta \
+  /home/luis/yocto/poky/meta-poky \
+  /home/luis/yocto/poky/meta-yocto-bsp \
+  /home/luis/yocto/meta-mylayer"
+
+BitBake parses each 'conf/layer.conf' file from the top down as specified in the BBLAYERS variable within the 'build/conf/bblayers.conf' file. 
+
+During the processing of each 'conf/layer.conf' file, BitBake adds the recipes, classes and configurations contained within the particular layer to the source directory.
+
+
+
+BitBake layer management tool: bitbake-layers
+---------------------------------------------
+
+The openembedded-core layer provides a utility tool called bitbake-layers, which performs actions associated with layers. 
+
+It allows you to perform actions including the following:
+
+	- See the list of actual layers taken into account in your configuration
+	- Add existing layers to your configuration
+	- Create a new layer
+
+For an exhaustive list of options and subcommands:
+
+$ bitbake-layers --help
+
+The bitbake-layers script with the create-layer subcommand simplifies creating a new general layer:
+
+$ bitbake-layers create-layer mylayer
+
+The default mode of the script’s operation with this subcommand is to create a layer with the following:
+
+	- A layer priority of 6
+	- A "conf" subdirectory that contains a 'layer.conf' file
+	- A "recipes-example" subdirectory that contains a further subdirectory named example, which contains an 'example.bb' recipe file
+	- A COPYING.MIT, which is the license statement for the layer. The script assumes you want to use the MIT license, which is typical for most layers, for the contents of the layer itself
+	- A README file, which is a file describing the contents of your new layer
+
+$ tree meta-mylayer
+
+meta-mylayer
+|
+|--conf/
+|   |--layer.conf
+|-- COPYING.MIT
+|-- README
+|-- recipes-example
+    |-- example
+        |-- example.bb
+
+Once you create your general layer, you must add it to your 'bblayers.conf' file.
+
+Add your layer by using the bitbake-layers add-layer command:
+
+$ bitbake-layers add-layer your_layer_name
+
+You can check the current configured layers with:
+
+$ bitbake-layers show-layers
+
+
+
+ 

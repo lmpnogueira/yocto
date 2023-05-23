@@ -160,6 +160,7 @@ $ bitbake-layers show-layers
 
 
 You can create your own layer or include any number of available layers from:
+
 	- OpenEmbedded Layer Index, available at https://layers.openembedded.org/
 	- Yocto Project Compatible Layer Index, available athttps://www.yoctoproject.org/software-overview/layers/
 
