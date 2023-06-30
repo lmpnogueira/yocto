@@ -1,9 +1,13 @@
 Exploring layers
 ================
 
+To ease the exploration of the Yocto Project’s capabilities, it is good to have a real board so we can enjoy the experience of booting our customised embedded system.
+
 This section gives you a minimal description of how to use the Yocto Project to build images for Beaglebone hardware starting from scratch. 
 
 The Beaglebone Black is a low-cost ARM Cortex-A8-based development board. 
+
+Further information is available at https://beagleboard.org/black/.
 
 The Yocto Project officially supports the Beaglebone board and provides a minimal bootable BSP support. 
 
@@ -31,14 +35,43 @@ How to find out which hardware devices are supported
 
 
 
+Discovering the right BSP layer
+-------------------------------
+
+We learned that the Yocto Project allows for splitting its metadata among different layers.
+
+The way to find the BSP for a board varies, but generally, we can find it by visiting https:// layers.openembedded.org.
+
+When we choose a board, the first step is to verify the quality of its software support. The low-level components comprise the following:
+	
+	- Bootloader (such as U-Boot, GRUB, or systemd-boot)
+	- Linux kernel (with other required drivers such as GPU or WiFi)
+	- User space packages required by hardware acceleration
+
+Those are critical but are not the only aspects to consider. 
+
+	- A reusable disk partition layout (e.g., a WIC .wks template)
+	- Ready-to-use machine definitions
+	- User space packages integrated for hardware acceleration (usable out of the box)
+
+The maturity level of software enablement, and the Yocto Project BSP, significantly impact the friction involved in using the board and the out-of-the-box experience when using Poky for different boards.
+
+The integration inside the Yocto Project, in a BSP layer form, reduces the friction in the board use as it usually provides the following:
+
+
+
 meta-yocto-bsp
 --------------
 
+To use this board, we can rely on the meta-yocto-bsp layer, which is included by default in Poky:
+
 	- Provides "reference" BSPs for each of the supported architectures
 	- It is based on the mainline kernel/bootloader
-	- Does not support any advanced features or anything not in the upstream mainline kernel
-	- e.g. no capes, no power management, no hardware acceleration, no 3D, no PRU, etc.
-	- The purpose of this BSP is to have some basic out-of-box experience for the select hardware platforms within Poky to evaluate the Yocto Project and OpenEmbedded framework, but not the specific hardware platforms
+	- Does not support any advanced features or anything not in the upstream mainline kernel, e.g., no capes, no power management, no hardware acceleration, no 3D, no PRU, etc.
+	
+The purpose of this BSP is to have some basic out-of-box experience for the select hardware platforms within Poky to evaluate the Yocto Project and OpenEmbedded framework, but not the specific hardware platforms.
+
+For proper and more comprehensive hardware support users are directed to the corresponding official BSPs - meta-intel, meta-ti, meta-fsl (ARM, PPC), meta-amd, etc.
 
 
 
@@ -49,19 +82,31 @@ The official OpenEmbedded/Yocto BSP layer for Texas Instruments platforms.
 
 Most of the advanced features and peripheral support for the wider range of latest TI platforms.
 
-$ git clone git://git.yoctoproject.org/meta-ti
+The meta layer can be accessed at https://git.yoctoproject.org/meta-ti/
+
+To create the source structure, download meta-ti using the following command line:
+
+	$ git clone git://git.yoctoproject.org/meta-ti
+
+or use the bitbake-layers script:
+
+	$ bitbake-layers layerindex-fetch meta-ti
+
+Note: layerindex-fetch fetches a layer from a layer index, along with its dependent layers, and adds the layers to the 'conf/bblayers.conf' file
 
 
 
 Adding Layers
 --------------
 
+Once you have the meta-ti layer, you must add it to your 'bblayers.conf' file.
+
 Two ways:
 
 1. Manual: 
 	- Edit bblayers.conf file and add the new layer to BBLAYERS
 
-2. Automatic: 
+2. Using the bitbake-layers script: 
 	- $ bitbake-layers add-layer <path-to-new-layer>
 
 

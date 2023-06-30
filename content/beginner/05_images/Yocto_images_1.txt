@@ -1,0 +1,150 @@
+Images
+======
+
+When using the Yocto Project, you will spend most of your time building images.
+
+The end goal for anyone using the Yocto Project should be to create a Linux distributions that is customised to match your product(s) requirements. 
+
+Image files are, in essence, a set of packages grouped for a purpose and configured in a controlled way. 
+
+We can create an image from scratch or create one by reusing an existing one and adding the extra necessary packages.
+
+
+
+What is an image
+----------------
+
+Images are a central concept within the Yocto Project and essential to the definition of a Linux distribution.
+
+An image is a top level recipe (it inherits an image.bbclass).
+
+Building an image creates an entire Linux distribution from source:
+
+	- Compiler, tools, libraries
+	- BSP: bootloader, kernel
+	- Root filesystem: base OS, services, applications, etc
+
+There are plenty reference images that one can inspect and derive your work from. 
+
+To retrieve a list of available image recipes provided by Poky we can run: 
+
+	$ find ./poky/meta -name "*-image-*.bb"
+
+A full description of the different images can be found in the Yocto Project Reference Manual (https://docs.yoctoproject.org/4.0.10/ref-manual/images.html). 
+
+Typically, these default images are used as a base and customised for your own project needs. 
+
+The most frequently used base default images are:
+
+	- core-image-minimal: This is the smallest BusyBox, sysvinit, and udev-based console-only image
+	- core-image-full-cmdline: This is the BusyBox-based console-only image with full hardware support and a more complete Linux system, including Bash
+	- core-image-lsb: This is a console-only image that is based on Linux Standard Base (LSB) compliance
+	- core-image-x11: This is the basic X11 Windows-system-based image with a graphical terminal
+	- core-image-sato: This is the X11 Window-system-based image with a SATO theme and a GNOME mobile desktop environment
+	- core-image-weston: This is a Wayland protocol and Weston reference compositor-based image
+
+You will also find images with the following suffixes:
+
+	- dev: This image is suitable for development work, as it contains headers and libraries
+	- sdk: This image includes a complete SDK that can be used for development on the target
+	- initramfs: This is an image that can be used for a RAM-based root filesystem, which can optionally be embedded with the Linux kernel
+
+
+
+What is a package group
+-----------------------
+
+It is very common to group packages that together serve a common purpose in to something called a "packagegroup".
+
+There are many package groups, present in subdirectories named "packagegroups".
+
+Use the following command line to find available package groups:
+
+	$ find . -name 'packagegroups'
+
+They are recipe files(.bb) and start with 'packagegroup-'. 
+
+For example, 'packagegroup-core-boot' provides the minimum set of packages necessary to create a bootable image with a console.
+
+Using the package group name in the IMAGE_INSTALL variable install all the packages defined by the package group into the root file system of your target image.
+
+Example:
+
+	IMAGE_INSTALL += " packagegroup-debug"
+
+Also, with package groups, you can easily install the packages based on the distro features, machine features or combined features.
+
+Example:
+
+	IMAGE_INSTALL += " ${@bb.utils.contains("DISTRO_FEATURES", "debug", "packagegroup-debug", "", d)}"
+
+In this example, if the DISTRO_FEATURES variable contains the debug feature, then these debug packages will be added to the image, otherwise they will not.
+
+
+
+What are image features
+-----------------------
+
+Another method for customising your image is to enable or disable high-level image features by using the IMAGE_FEATURES and EXTRA_IMAGE_FEATURES variables.
+
+Through these variables, you can add several different predefined packages such as development utilities or packages with debug information needed to investigate application problems or profile applications.
+
+Currently, several image features are supported, as detailed in the Image Features section of the Yocto Project Reference Manual (https://docs.yoctoproject.org/4.0.10/ref-manual/features.html#image-features).
+
+The best practice is to use: 
+
+	- IMAGE_FEATURES from a recipe
+	- EXTRA_IMAGE_FEATURES from 'conf/local.conf'
+
+To understand how these features work, the best reference is the 'meta/classes/core-image.bbclass' file.
+
+This class lists out the available IMAGE_FEATURES of which most map to package groups while some, such as "debug-tweaks" and "read-only-rootfs", resolve as general configuration settings.
+
+Based on this information, the build system automatically adds the appropriate packages or configurations to the IMAGE_INSTALL variable.
+
+
+
+Creating custom images
+----------------------
+
+You often need to create your own image recipe in order to add new packages or functionality.
+
+Two ways:
+
+	- Creating an image from scratch
+	- Extend an existing recipe (preferable)
+
+
+
+Creating an image from scratch
+------------------------------
+
+The "core-image" class provides image features that offer helpful building blocks of commonly used functionality and should be used when creating an image from scratch.
+
+For example, we can create an image in the "recipes-mine/images/my-image-strace.bb" file consisting of the following lines of code:
+
+	inherit core-image
+	IMAGE_FEATURES += "ssh-server-openssh splash"
+	CORE_IMAGE_EXTRA_INSTALL += "strace"
+
+CORE_IMAGE_EXTRA_INSTALL is the variable we should use to include extra packages in the image when we inherit the "core-image" class, which facilitates image creation. 
+
+The class adds support for the IMAGE_FEATURES variable, which avoids duplication of code.
+
+
+
+Reusing an existing image
+-------------------------
+
+When an image mostly fits our needs and we need to do minor adjustments on it, it is very convenient to reuse its code.
+
+This makes code maintenance easier and highlights the functional differences.
+
+For example, we may want to include an application and remove an image feature from the "core-image-full-cmdline" image file. 
+
+In that case, we can create an image in the 'recipes-mine/images/my-image-full-cmdline.bb' file with the following lines of code:
+
+	require recipes-extended/images/core-image-full-cmdline.bb
+	IMAGE_FEATURES:remove = "splash"
+	CORE_IMAGE_EXTRA_INSTALL += "myapp"
+

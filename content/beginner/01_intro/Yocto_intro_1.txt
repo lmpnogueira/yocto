@@ -18,7 +18,7 @@ One more element can be a collection of programs specific to the embedded applic
 
 
 The Yocto Project
-----------------------
+-----------------
 
 Why the name? Yocto is the smallest SI metric system prefix (y = 10^-24).
 
@@ -41,8 +41,8 @@ To understand the outcome provided by the Yocto Project, we can use the analogy 
 
 
 
-Advantages of Yocto Project
-----------------------------
+Advantages of the Yocto Project
+-------------------------------
 
 1. Widely adopted across the industry
 
@@ -132,7 +132,7 @@ The Yocto Project focuses on providing powerful, easy-to-use, interoperable, wel
 
 
 Metadata 
--------------
+--------
 
 Non Yocto: a set of data that describes and gives information about other data.
 
@@ -150,10 +150,16 @@ Metadata is collection of:
 	- Classes (.bbclass)
 	- Includes (.inc)
 
+The configuration files define the global content to provide information and configure how the recipes work.
+
+The classes and recipes describe the tasks to be run and provide the information needed to allow BitBake to generate the required task list and its dependencies. 
+
+The inheritance mechanism permits a recipe to inherit one or more classes to promote code reuse, improve accuracy, and make maintenance easier.
+
 
 
 meta-yocto-bsp
-----------------
+--------------
 
 A Board Support Package (BSP) is a collection of information that defines how to support a particular hardware device, set of devices, or hardware platform.
 
@@ -173,7 +179,7 @@ Note: To develop on different hardware, you will need to complement Poky with ha
 
 
 Others
---------
+------
 
 meta-poky, which is Poky-specific metadata
 

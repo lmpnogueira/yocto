@@ -25,7 +25,7 @@ layer                 path                                      priority
 ==========================================================================
 meta                  /home/luis/yocto/poky/meta  			5
 meta-poky             /home/luis/yocto/poky/meta-poky  		5
-meta-yocto-bsp        /home/luis/yocto/poky/meta-yocto-bsp  		5
+meta-yocto-bsp        /home/luis/yocto/poky/meta-yocto-bsp  	5
 
 
 
@@ -179,11 +179,11 @@ To enable your layer, simply add your layer’s path to the BBLAYERS variable in
 
 The following example shows how to enable your new meta-mylayer layer (note how your new layer exists outside of the official poky repository which you would have checked out earlier):
 
-BBLAYERS ?= " \
-  /home/luis/yocto/poky/meta \
-  /home/luis/yocto/poky/meta-poky \
-  /home/luis/yocto/poky/meta-yocto-bsp \
-  /home/luis/yocto/meta-mylayer"
+	BBLAYERS ?= " \
+		/home/luis/yocto/poky/meta \
+		/home/luis/yocto/poky/meta-poky \
+		/home/luis/yocto/poky/meta-yocto-bsp \
+		/home/luis/yocto/meta-mylayer"
 
 BitBake parses each 'conf/layer.conf' file from the top down as specified in the BBLAYERS variable within the 'build/conf/bblayers.conf' file. 
 
@@ -204,11 +204,11 @@ It allows you to perform actions including the following:
 
 For an exhaustive list of options and subcommands:
 
-$ bitbake-layers --help
+	$ bitbake-layers --help
 
 The bitbake-layers script with the create-layer subcommand simplifies creating a new general layer:
 
-$ bitbake-layers create-layer mylayer
+	$ bitbake-layers create-layer mylayer
 
 The default mode of the script’s operation with this subcommand is to create a layer with the following:
 
@@ -234,11 +234,11 @@ Once you create your general layer, you must add it to your 'bblayers.conf' file
 
 Add your layer by using the bitbake-layers add-layer command:
 
-$ bitbake-layers add-layer your_layer_name
+	$ bitbake-layers add-layer your_layer_name
 
 You can check the current configured layers with:
 
-$ bitbake-layers show-layers
+	$ bitbake-layers show-layers
 
 
 
